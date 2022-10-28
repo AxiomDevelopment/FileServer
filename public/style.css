@@ -92,6 +92,7 @@ html {
 }
 
 #downloads {
+    flex: 8;
     display: flex;
     flex-flow: column;
     overflow: hidden;
@@ -105,7 +106,6 @@ html {
 }
 
 #downloadables {
-    flex: 8;
     overflow-y: scroll;
     display: flex;
     flex-flow: row wrap;
