@@ -1,0 +1,1 @@
+screen -dmS Fileserver node server.js
