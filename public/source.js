@@ -49,7 +49,7 @@ function createFilebox(name, size) {
     let div = document.createElement('div');
     div.setAttribute("name", name);
     div.setAttribute("class", "filebox");
-    div.innerText = `${name} ...... ${Math.round((size / 1000000) * 100) / 100}MB`;
+    div.innerText = `${name} \n\n ${Math.round((size / 1000000) * 100) / 100}MB`;
     div.setAttribute("onclick", 'reqFile(this.getAttribute("name"))');
     div.href = `./upload/${name}`;
     div.download = name;
