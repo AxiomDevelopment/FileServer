@@ -1,31 +1,49 @@
 const express = require('express');
 const app = express();
 const fileUpload = require('express-fileupload');
-const server = require('http').createServer(app);
-const { writeFileSync, readdirSync, statSync } = require("fs");
-const port = 8064;
-
-app.use('/fileserver', express.static('public'));
 app.use(fileUpload());
+const compression = require('compression');
+app.use(compression());
+const { writeFileSync, readdirSync, statSync, unlinkSync } = require("fs");
+const port = 8064;
+const path = '/';
+app.listen(port, () => console.log('Server is running on port', port));
 
-app.post('/fileserver', function (req, res) {
-    if (!req.files || Object.keys(req.files).length == 0) {
-        return res.status(400).send('No files were uploaded.');
-    }
-    let file = req.files.file;
-    if (file.size != file.data.length) return res.status(400).send('File impartially uploaded.');
-    writeFileSync(`./public/upload/${file.name}`, file.data);
-    res.status(200).send([file.name, file.size]);
+app.get(path, (_req, res) => res.sendFile(__dirname + '/resources/index.html'));
+app.use(path + 'resources', express.static('resources'));
+app.use(path, express.static('upload'));
+
+app.put(path + 'file', (req, res) => {
+    try {
+        let file = req.files.file;
+        writeFileSync(`./upload/${file.name}`, file.data);
+        res.status(200).send();
+    } catch (e) { console.error(e); res.status(e).send() };
 });
 
-app.get('/fileserver/init', function (req, res) {
-    let files = readdirSync('./public/upload');
-    var returnArray = [];
-    for (let file of files) {
-        let data = statSync(`./public/upload/${file}`);
-        returnArray.push([file, data.size]);
-    }
-    res.status(200).send(returnArray);
+app.get(path + 'file', (req, res) => {
+    try {
+        let fileName = req.get('File-Name');
+        res.sendFile(__dirname + `/upload/${fileName}`);
+    } catch (e) { console.error(e); res.status(e).send() };
 });
 
-server.listen(port, () => console.log(`listening on port ${port}`));
+app.get(path + 'files', (req, res) => {
+    try {
+        let files = readdirSync('./upload');
+        let returnArray = [];
+        for (let file of files) {
+            let data = statSync(`./upload/${file}`);
+            returnArray.push({ name: file, size: data.size });
+        }
+        res.status(200).send(returnArray);
+    } catch (e) { console.error(e); res.status(e).send() };
+});
+
+app.delete(path + 'file', (req, res) => {
+    try {
+        let fileName = req.get('File-Name');
+        unlinkSync(`./upload/${fileName}`);
+        res.status(200).send();
+    } catch (e) { console.error(e); res.status(e).send() };
+});
