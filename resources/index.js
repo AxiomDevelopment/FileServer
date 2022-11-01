@@ -52,7 +52,7 @@ function putFile() {
             alert("File upload failed");
         }
     }
-    xhr.open("PUT", 'file');
+    xhr.open("PUT", '/fileserver/file');
     xhr.send(formdata);
 }
 
@@ -74,7 +74,7 @@ function getFile(filename) {
             alert("File not found");
         }
     }
-    xhr.open("GET", 'file');
+    xhr.open("GET", '/fileserver/file');
     xhr.setRequestHeader('File-Name', filename);
     xhr.send();
 }
@@ -94,7 +94,7 @@ function getAllFiles() {
             alert("Something went wrong");
         }
     }
-    xhr.open("GET", 'files');
+    xhr.open("GET", '/fileserver/files');
     xhr.send();
 }
 
@@ -109,7 +109,7 @@ function deleteFile(filename) {
             alert("File not found");
         }
     }
-    xhr.open("DELETE", 'file');
+    xhr.open("DELETE", '/fileserver/file');
     xhr.setRequestHeader('File-Name', filename);
     xhr.send();
 }
