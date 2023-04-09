@@ -1,1 +1,1 @@
-screen -dmS Fileserver node server.js
+screen -dmS fileserver node server.js;

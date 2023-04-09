@@ -1,48 +1,52 @@
 const express = require('express');
-const app = express();
+const compress = require('compression-next');
 const fileUpload = require('express-fileupload');
-app.use(fileUpload());
-const compression = require('compression');
-app.use(compression());
-const { writeFileSync, readdirSync, statSync, unlinkSync } = require("fs");
-const port = 8064;
-app.listen(port, () => console.log('Server is running on port', port));
+const fs = require('fs');
+const app = express();
 
-app.get('/fileserver/', (_req, res) => res.sendFile(__dirname + '/resources/index.html'));
-app.use('/fileserver/resources', express.static('resources'));
-app.use('/fileserver/', express.static('upload'));
+const port = 8001;
+const path = '/fileserver';
 
-app.put('/fileserver/file', (req, res) => {
-    try {
-        let file = req.files.file;
-        writeFileSync(`./upload/${file.name}`, file.data);
-        res.status(200).send();
-    } catch (e) { console.error(e); res.status(e).send() };
+app.use(compress({ threshold: 500 }));
+app.use(path, express.static('public'));
+app.use(fileUpload({ useTempFiles: true, tempFileDir: '/tmp/' }));
+
+app.listen(port, () => console.log(`listening on port ${port}`));
+
+app.get(path, (_, res) => res.sendFile(__dirname + '/index.html'));
+app.get(path + '/client.js', (_, res) => res.sendFile(__dirname + '/client.js'));
+app.get(path + '/favicon.ico', (_, res) => res.sendFile(__dirname + '/favicon.ico'));
+
+app.post(path, (req, res) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).send('No files were uploaded.');
+    }
+
+    let file = req.files.file;
+    // if file name contains a slash return an error
+    if (file.name.includes('/')) return res.status(400).send('Invalid file name');
+    let uploadPath = __dirname + '/public/' + file.name;
+
+    file.mv(uploadPath, (err) => {
+        if (err) return res.status(500).send(err);
+        res.send('success');
+    });
 });
 
-app.get('/fileserver/file', (req, res) => {
-    try {
-        let fileName = req.get('File-Name');
-        res.sendFile(__dirname + `/upload/${fileName}`);
-    } catch (e) { console.error(e); res.status(e).send() };
+// respond to get request for public files by returning the filename
+app.get(path + '/get', (_, res) => {
+    // get all file names from the public folder and return them
+    const files = fs.readdirSync(__dirname + '/public');
+    res.send(files);
 });
 
-app.get('/fileserver/files', (req, res) => {
-    try {
-        let files = readdirSync('./upload');
-        let returnArray = [];
-        for (let file of files) {
-            let data = statSync(`./upload/${file}`);
-            returnArray.push({ name: file, size: data.size });
-        }
-        res.status(200).send(returnArray);
-    } catch (e) { console.error(e); res.status(e).send() };
-});
-
-app.delete('/fileserver/file', (req, res) => {
-    try {
-        let fileName = req.get('File-Name');
-        unlinkSync(`./upload/${fileName}`);
-        res.status(200).send();
-    } catch (e) { console.error(e); res.status(e).send() };
+// respond to delete request for public files by deleting the file
+app.delete(path + '/:file', (req, res) => {
+    // get the file name from the request
+    let file = req.params.file;
+    // if file name contains a slash return an error
+    if (file.includes('/')) return res.status(400).send('Invalid file name');
+    // delete the file
+    fs.unlinkSync(__dirname + '/public/' + file);
+    res.send('success');
 });

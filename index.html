@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Axiom CDN</title>
+    <link rel="icon" href="./favicon.ico">
+    <script src="client.js"></script>
+    <style>
+        html, body {
+            background-color: #1e1e1e;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <form ref='uploadForm' id='uploadForm' action='./' method='post' encType="multipart/form-data">
+        <input type="file" name="file" />
+        <input type='submit' value='Upload!' />
+    </form>
+    <div id="data">
+        <div id="progressNumber">ready...</div>
+        <div id="timeRemaining">0s</div>
+        <div id="uploadSpeed">0 mb/s</div>
+    </div>
+    <br>File list:
+    <div id="files"></div><br>
+    Created by FullMetalFuzzball
+</body>
+
+</html>
