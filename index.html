@@ -10,6 +10,7 @@
         html, body {
             background-color: #1e1e1e;
             color: #fff;
+            font-size: 18px;
         }
         a {
             color: #00b4d8;
@@ -19,14 +20,14 @@
 
 <body>
     <form ref='uploadForm' id='uploadForm' action='./' method='post' encType="multipart/form-data">
-        <input type="file" name="file" />
+        <input type="file" name="file" id="file"/>
         <input type='submit' value='Upload!' />
     </form>
 
     <div id="data">
         <div id="progressNumber">ready...</div>
-        <div id="timeRemaining">0s</div>
-        <div id="uploadSpeed">0 mb/s</div>
+        <div id="timeRemaining">~ seconds</div>
+        <div id="uploadSpeed">~ mbit/sec</div>
     </div>
     <br>File list:
     <div id="files"></div><br>

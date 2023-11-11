@@ -32,29 +32,34 @@ window.addEventListener('load', () => {
     const form = document.getElementById('uploadForm');
     form.addEventListener('submit', (event) => {
         event.preventDefault();
+        if (document.getElementById('file').files[0].size > 5e+9) return alert('File is too big!');
         const startTime = Date.now();
         const request = new XMLHttpRequest();
         request.upload.addEventListener('progress', (event) => {
-            let percent = (event.loaded / event.total) * 100;
-            percent = percent.toFixed(2);
-            document.getElementById('progressNumber').innerText = percent + '%';
+            const percent = (event.loaded / event.total) * 100;
+            document.getElementById('progressNumber').innerText = percent.toFixed(2) + '%';
 
-            let timeRemaining = (100 - percent) * ((Date.now() - startTime) / percent);
-            timeRemaining = timeRemaining / 1000;
-            timeRemaining = Math.round(timeRemaining);
-            document.getElementById('timeRemaining').innerText = timeRemaining + 's';
+            document.getElementById('timeRemaining').innerText = timeRemaining(startTime, percent);
 
-            let uploadSpeed = (event.loaded / 1000) / ((Date.now() - startTime) / 1000);
-            uploadSpeed = Math.round(uploadSpeed / 1000);
-            document.getElementById('uploadSpeed').innerText = uploadSpeed * 8 + ' mb/s';
+            const uploadSpeed = (event.loaded * 8) / ((Date.now() - startTime) * 1000);
+            document.getElementById('uploadSpeed').innerText = uploadSpeed.toFixed(1) + ' mbit/sec';
 
             if (percent == 100) document.getElementById('progressNumber').innerText = 'Processing...';
         });
         request.addEventListener('load', () => {
             document.getElementById('progressNumber').innerText = 'Done!';
+            const totalTime = (Date.now() - startTime) / 1000;
+            document.getElementById('timeRemaining').innerText = 'Took ' + Math.floor(totalTime / 60) + ' minutes and ' + Math.round(totalTime % 60) + ' seconds';
             requestFiles();
         });
         request.open('POST', './');
         request.send(new FormData(form));
+        request.addEventListener('error', () => alert('Error uploading file!'));
     });
 });
+
+function timeRemaining(startTime, percent) {
+    const timeRemaining = ((100 - percent) * (Date.now() - startTime)) / (1000 * percent);
+    if (timeRemaining > 60) return Math.floor(timeRemaining / 60) + ' minutes and ' + Math.round(timeRemaining % 60) + ' seconds';
+    return Math.round(timeRemaining) + ' seconds';
+}
